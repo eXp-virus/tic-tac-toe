@@ -1,6 +1,6 @@
 let board = ["", "", "", "", "", "", "", "", ""];
 function Gameboard() {
-    //let board = ["", "", "", "", "", "", "", ""];
+    // let board = ["", "", "", "", "", "", "", ""];
 
     const WINNING_CONDITIONS = [
                                 [0, 1, 2],
@@ -26,7 +26,7 @@ function Gameboard() {
         return board.every(value => value !== '');
     }
 
-    return {board, addMarker, checkWin, checkDraw}
+    return {addMarker, checkWin, checkDraw}
 }
 
 function PlayGame() {
@@ -40,7 +40,7 @@ function PlayGame() {
     const p = document.querySelector('p');
     const result = document.querySelector('#gameResult');
 
-    cells.forEach(cell => cell.addEventListener('click', playRound, {once: true}))
+    cells.forEach(cell => cell.addEventListener('click', playRound))
 
     function playRound(e) {
         if(!gameActive) {
@@ -49,7 +49,8 @@ function PlayGame() {
         let cell = e.target;
         let index = cell.dataset.index;
         let marker = activePlayer.marker;
-        cell.textContent = marker;
+
+        if(cell.textContent === '') cell.textContent = marker;
 
         Gameboard().addMarker(index, marker);
         
@@ -71,29 +72,25 @@ function PlayGame() {
 
         switchTurn();
     }
-}
-
-const result = document.querySelector('#gameResult');
-result.addEventListener('click', (e) => {
-    if(e.target.closest('button')) {
-        e.target.closest('button').remove();
-        resetGame();
-        PlayGame();
+    result.addEventListener('click', resetGame)
+   
+    function resetGame(e) {
+        cells.forEach(cell => cell.textContent = "");
+        gameActive = true;
+        board.fill("");
+        p.textContent = "";
+        activePlayer = players[0];
+        // remove play again button
+        if(e.target.closest('button')) {
+            e.target.closest('button').remove();
+        }
     }
-})
+}
 
 function getButton() {
     const button = document.createElement('button');
     button.textContent = "Play Again";
     return button;
-}
-
-function resetGame() {
-    const cells = document.querySelectorAll('#box');
-    const p = document.querySelector('p');
-    cells.forEach(cell => cell.textContent = "")
-    board.fill("");
-    p.textContent = "";
 }
 
 PlayGame();
