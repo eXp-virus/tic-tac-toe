@@ -1,6 +1,5 @@
-let board = ["", "", "", "", "", "", "", "", ""];
-function Gameboard() {
-    // let board = ["", "", "", "", "", "", "", ""];
+const Gameboard = (() => {
+     let board = ["", "", "", "", "", "", "", "", ""];
 
     const WINNING_CONDITIONS = [
                                 [0, 1, 2],
@@ -26,8 +25,8 @@ function Gameboard() {
         return board.every(value => value !== '');
     }
 
-    return {addMarker, checkWin, checkDraw}
-}
+    return {addMarker, checkWin, checkDraw, board}
+})()
 
 function PlayGame() {
     let gameActive = true;
@@ -37,8 +36,8 @@ function PlayGame() {
     const switchTurn = () => activePlayer = activePlayer === players[0] ? players[1] : players[0];
 
     const cells = document.querySelectorAll('#box');
-    const p = document.querySelector('p');
-    const result = document.querySelector('#gameResult');
+    const showResult = document.querySelector('p');
+    const addPlayAgainButton = document.querySelector('#gameResult');
 
     cells.forEach(cell => cell.addEventListener('click', playRound))
 
@@ -52,33 +51,33 @@ function PlayGame() {
 
         if(cell.textContent === '') cell.textContent = marker;
 
-        Gameboard().addMarker(index, marker);
+        Gameboard.addMarker(index, marker);
         
-        if(Gameboard().checkWin()) {
-            p.textContent = activePlayer.name + ' won';
+        if(Gameboard.checkWin()) {
+            showResult.textContent = activePlayer.name + ' won';
             gameActive = false;
             const button = getButton();
-            result.appendChild(button);
+            addPlayAgainButton.appendChild(button);
             return;
         }
 
-        if(Gameboard().checkDraw()) {
-            p.textContent = 'Game tied'
+        if(Gameboard.checkDraw()) {
+            showResult.textContent = 'Game tied'
             gameActive = false;
-            const button = getButton();
-            result.appendChild(button);
+            const button = getButton(); // add a play again button after game ends
+            addPlayAgainButton.appendChild(button);
             return;
         }
 
         switchTurn();
     }
-    result.addEventListener('click', resetGame)
+    addPlayAgainButton.addEventListener('click', resetGame)
    
     function resetGame(e) {
         cells.forEach(cell => cell.textContent = "");
         gameActive = true;
-        board.fill("");
-        p.textContent = "";
+        Gameboard.board.fill("");
+        showResult.textContent = "";
         activePlayer = players[0];
         // remove play again button
         if(e.target.closest('button')) {
