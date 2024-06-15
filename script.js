@@ -1,87 +1,99 @@
+let board = ["", "", "", "", "", "", "", "", ""];
 function Gameboard() {
-    const board = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    //let board = ["", "", "", "", "", "", "", ""];
 
-    const winningCondition = [
+    const WINNING_CONDITIONS = [
                                 [0, 1, 2],
                                 [3, 4, 5],
                                 [6, 7, 8],
+                                [0, 4, 8],
+                                [2, 4, 6],
                                 [0, 3, 6],
                                 [1, 4, 7],
-                                [2, 5, 8],
-                                [2, 4, 6],
-                                [0, 4, 8]
+                                [2, 5, 8]
                             ];
 
-    const addMarker = (marker, index) => {
-        board[index] = marker;
+    const addMarker = (index, marker) => board[index] = marker;
+    
+    function checkWin() {
+        return WINNING_CONDITIONS.some(condition => {
+            let [a, b, c] = condition;
+            return board[a] && board[a] === board[b] && board[a] === board[c];
+        });
     }
 
-    const printBoard = () => {
-        let line = '';
-        for(let i = 0; i <= board.length; i++) {
-            if( i !== 0 && i % 3 === 0) {
-                console.log(line)
-                line = '';
-            }
-            line +=  " " + board[i];
-        }
+    function checkDraw() {
+        return board.every(value => value !== '');
     }
 
-    return {board, addMarker, printBoard, winningCondition};
+    return {board, addMarker, checkWin, checkDraw}
 }
 
-function gameControl() {
-    const board = Gameboard();
-    let canvas = board.board;
-    const players = [{name: 'Player 1', marker: 'X'},
-                     {name: 'Player 2', marker: 'O'}]
-    
+function PlayGame() {
+    let gameActive = true;
+    const players = [{name: 'Player X', marker: 'X'}, {name: 'Player O', marker: 'O'}];
     let activePlayer = players[0];
-    let count = 0;
-    const playerTurn = () => {
-        activePlayer = activePlayer === players[0] ? players[1] : players[0];
-    }
 
-    const getActivePlayer = () => activePlayer; 
+    const switchTurn = () => activePlayer = activePlayer === players[0] ? players[1] : players[0];
 
-    function hasWon() {
-        for(let i=0; i<8; i++) {
-            for(let j=0; j<1; j++) {
-                //let index = board.winningCondition[i][j];
+    const cells = document.querySelectorAll('#box');
+    const p = document.querySelector('p');
+    const result = document.querySelector('#gameResult');
 
-                if(canvas[board.winningCondition[i][j]] === canvas[board.winningCondition[i][j+1]] && 
-                    canvas[board.winningCondition[i][j]] === canvas[board.winningCondition[i][j+2]])
-                {
-                    console.log('We have a winner');
-                    console.log(getActivePlayer().name);
-                }    
-            }
+    cells.forEach(cell => cell.addEventListener('click', playRound, {once: true}))
+
+    function playRound(e) {
+        if(!gameActive) {
+            return;
         }
+        let cell = e.target;
+        let index = cell.dataset.index;
+        let marker = activePlayer.marker;
+        cell.textContent = marker;
+
+        Gameboard().addMarker(index, marker);
+        
+        if(Gameboard().checkWin()) {
+            p.textContent = activePlayer.name + ' won';
+            gameActive = false;
+            const button = getButton();
+            result.appendChild(button);
+            return;
+        }
+
+        if(Gameboard().checkDraw()) {
+            p.textContent = 'Game tied'
+            gameActive = false;
+            const button = getButton();
+            result.appendChild(button);
+            return;
+        }
+
+        switchTurn();
     }
-    
-    const playRound = (marker, index) => {
-        console.log(getActivePlayer().name, 'turn');
-        marker = getActivePlayer().marker;
-        index = prompt('select index to place your marker');
-    
-        board.addMarker(marker, index);
-        board.printBoard();
-        hasWon();
-
-        /*
-        game tie logic 
-        there's a total of 9 moves to play in this game. If the game has
-        tied, it means player 1 has played `5` moves and player 2 has played
-        '4' moves. So here, if player 1 move count reaches `5` we display
-        ```game tied``` message. 
-        */
-        if(getActivePlayer() === players[0]) count++;
-        if(count === 5) console.log('***Game tied***');
-
-        playerTurn();
-    }
-
-    return {playRound};
 }
 
-const test = gameControl();
+const result = document.querySelector('#gameResult');
+result.addEventListener('click', (e) => {
+    if(e.target.closest('button')) {
+        e.target.closest('button').remove();
+        resetGame();
+        PlayGame();
+    }
+})
+
+function getButton() {
+    const button = document.createElement('button');
+    button.textContent = "Play Again";
+    return button;
+}
+
+function resetGame() {
+    const cells = document.querySelectorAll('#box');
+    const p = document.querySelector('p');
+    cells.forEach(cell => cell.textContent = "")
+    board.fill("");
+    p.textContent = "";
+}
+
+PlayGame();
