@@ -74,14 +74,13 @@ function PlayGame() {
     addPlayAgainButton.addEventListener('click', resetGame)
    
     function resetGame(e) {
-        cells.forEach(cell => cell.textContent = "");
-        gameActive = true;
-        Gameboard.board.fill("");
-        showResult.textContent = "";
-        activePlayer = players[0];
-        // remove play again button
-        if(e.target.closest('button')) {
+        if(e.target.matches('button')) {
             e.target.closest('button').remove();
+            cells.forEach(cell => cell.textContent = "");
+            gameActive = true;
+            Gameboard.board.fill("");
+            showResult.textContent = "";
+            activePlayer = players[0];
         }
     }
 }
